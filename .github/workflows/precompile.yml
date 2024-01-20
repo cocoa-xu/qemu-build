@@ -42,7 +42,7 @@ jobs:
           make DESTDIR="${DESTDIR}" install
 
           cd "${DESTDIR}"
-          tar -czf "${ROOTDIR}/build/qemu-${QEMU_VERSION}-x86_64-linux-gnu.tar.gz" .
+          tar -czf "${ROOTDIR}/build/qemu-x86_64-linux-gnu.tar.gz" .
 
       - uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
