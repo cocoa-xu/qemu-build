@@ -1,0 +1,49 @@
+name: precompile
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    runs-on: self-hosted-x86_64-linux-gnu
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile QEMU
+        run: |
+          export ROOTDIR="$(pwd)"
+          export QEMU_VERSION=${GITHUB_REF##*/v}
+          export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
+
+          curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
+          tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
+          cd "qemu-${QEMU_VERSION}"
+          ./configure --enable-strip --enable-user --prefix=/usr/local --disable-xen
+          make -j$(nproc)
+          make DESTDIR="${DESTDIR}" install
+
+          cd "${DESTDIR}"
+          tar -czf "${ROOTDIR}/build/qemu-${QEMU_VERSION}-x86_64-linux-gnu.tar.gz" .
+
+      - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            build/qemu-*-x86_64-linux-gnu.tar.gz
+
+      - name: deploy
+        if: startsWith(github.ref, 'refs/tags/') && github.repository == 'cocoa-xu/qemu-build'
+        env:
+          DEPLOY_LINUX_GNU_HOOK_URL: ${{ secrets.DEPLOY_LINUX_GNU_HOOK_URL }}
+        run: |
+          curl -sS --no-progress-meter "${DEPLOY_LINUX_GNU_HOOK_URL}${{ github.ref_name }}"
