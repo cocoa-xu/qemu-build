@@ -20,6 +20,7 @@ chmod a+rw /work/build
 
 export ROOTDIR="$(pwd)"
 export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
+export XZ_OPT="-e -T0 -9"
 
 curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
 tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
@@ -29,4 +30,5 @@ make -j$(nproc)
 make DESTDIR="${DESTDIR}" install
 
 cd "${DESTDIR}"
-tar -czf "${ROOTDIR}/build/qemu-${HOST_TRIPLET}.tar.gz" .
+tar -cJf "${ROOTDIR}/build/qemu-${HOST_TRIPLET}.tar.gz" .
+sha256sum qemu-${HOST_TRIPLET}.tar.xz | tee qemu-${HOST_TRIPLET}.tar.xz.sha256

@@ -35,14 +35,15 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            build/qemu-*.tar.gz
+            build/qemu-${{ env.HOST_TRIPLET }}.tar.xz
+            build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
 
       - name: deploy
         if: startsWith(github.ref, 'refs/tags/') && github.repository == 'cocoa-xu/qemu-build'
         env:
           DEPLOY_LINUX_GNU_HOOK_URL: ${{ secrets.DEPLOY_LINUX_GNU_HOOK_URL }}
         run: |
-          curl -sS --no-progress-meter "${DEPLOY_LINUX_GNU_HOOK_URL}${{ github.ref_name }}&platforms[]=x86_64-linux-gnu"
+          curl -sS --no-progress-meter "${DEPLOY_LINUX_GNU_HOOK_URL}${{ github.ref_name }}&platforms[]=${{ env.HOST_TRIPLET }}"
 
   linux-aarch64:
     runs-on: self-hosted-aarch64-linux-gnu
@@ -66,11 +67,128 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            build/qemu-*.tar.gz
+            build/qemu-${{ env.HOST_TRIPLET }}.tar.xz
+            build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
 
       - name: deploy
         if: startsWith(github.ref, 'refs/tags/') && github.repository == 'cocoa-xu/qemu-build'
         env:
           DEPLOY_LINUX_GNU_HOOK_URL: ${{ secrets.DEPLOY_LINUX_GNU_HOOK_URL }}
         run: |
-          curl -sS --no-progress-meter "${DEPLOY_LINUX_GNU_HOOK_URL}${{ github.ref_name }}&platforms[]=aarch64-linux-gnu"
+          curl -sS --no-progress-meter "${DEPLOY_LINUX_GNU_HOOK_URL}${{ github.ref_name }}&platforms[]=${{ env.HOST_TRIPLET }}"
+
+  macos-x86_64:
+    runs-on: self-hosted-x86_64-apple-darwin
+    env:
+      HOST_TRIPLET: x86_64-apple-darwin
+      XZ_OPT: "-e -T0 -9"
+    name: x86_64-apple-darwin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+    
+      - name: Install dependencies
+        run: |
+          brew install cmake ninja libarchive git glib gnu-sed automake autoconf coreutils llvm make wget pixman pkg-config xz texinfo mercurial libtool samba socat dtc
+          
+          if [ -f "/usr/local/bin/python3" ]; then
+            /usr/local/bin/python3 -m ensurepip --default-pip
+            /usr/local/bin/python3 -m pip install -U setuptools
+          fi
+          FIRST_PYTHON3="$(which python3)"
+          ${FIRST_PYTHON3} -m ensurepip --default-pip
+          ${FIRST_PYTHON3} -m pip install -U setuptools
+
+      - name: Compile QEMU
+        run: |
+          export ROOTDIR="$(pwd)"
+          export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
+          
+          curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
+          tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
+          cd "qemu-${QEMU_VERSION}"
+          ./configure --enable-strip --enable-user --enable-modules --enable-vhost-user --prefix=/usr/local --disable-xen
+          make -j$(nproc)
+          make DESTDIR="${DESTDIR}" install
+          
+          cd "${DESTDIR}"
+          tar -cJf "${ROOTDIR}/build/qemu-${HOST_TRIPLET}.tar.xz" .
+          cd "${ROOTDIR}/build"
+          sha256sum qemu-${{ env.HOST_TRIPLET }}.tar.xz | tee qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
+
+          rm -rf "${DESTDIR}"
+
+      - name: Upload QEMU artifacts
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            build/qemu-${{ env.HOST_TRIPLET }}.tar.xz
+            build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
+
+      - name: Deploy
+        if: startsWith(github.ref, 'refs/tags/') && github.repository == 'cocoa-xu/qemu-build'
+        env:
+          DEPLOY_MACOS_HOOK_URL: ${{ secrets.DEPLOY_MACOS_HOOK_URL }}
+        run: |
+          curl -sS --max-time 1200 --no-progress-meter "${DEPLOY_MACOS_HOOK_URL}&version=${{ github.ref_name }}&platforms[]=${{ env.HOST_TRIPLET }}"
+
+  macos-aarch64:
+    runs-on: self-hosted-aarch64-apple-darwin
+    env:
+      HOST_TRIPLET: aarch64-apple-darwin
+      XZ_OPT: "-e -T0 -9"
+    name: aarch64-apple-darwin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+    
+      - name: Install dependencies
+        run: |
+          export PATH="/opt/homebrew/bin:$PATH"
+          brew install cmake ninja libarchive git glib gnu-sed automake autoconf coreutils llvm make wget pixman pkg-config xz texinfo mercurial libtool samba socat dtc
+
+          if [ -f "/usr/local/bin/python3" ]; then
+            /usr/local/bin/python3 -m ensurepip --default-pip
+            /usr/local/bin/python3 -m pip install -U setuptools
+          fi
+          FIRST_PYTHON3="$(which python3)"
+          ${FIRST_PYTHON3} -m ensurepip --default-pip
+          ${FIRST_PYTHON3} -m pip install -U setuptools
+
+      - name: Compile QEMU
+        run: |
+          export PATH="/opt/homebrew/bin:$PATH"
+          export ROOTDIR="$(pwd)"
+          export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
+          
+          curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
+          tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
+          cd "qemu-${QEMU_VERSION}"
+          ./configure --enable-strip --enable-user --enable-modules --enable-vhost-user --prefix=/usr/local --disable-xen
+          make -j$(nproc)
+          make DESTDIR="${DESTDIR}" install
+          
+          cd "${DESTDIR}"
+          tar -cJf "${ROOTDIR}/build/qemu-${HOST_TRIPLET}.tar.xz" .
+          cd "${ROOTDIR}/build"
+          sha256sum qemu-${{ env.HOST_TRIPLET }}.tar.xz | tee qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
+
+          rm -rf "${DESTDIR}"
+
+      - name: Upload QEMU artifacts
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            build/qemu-${{ env.HOST_TRIPLET }}.tar.xz
+            build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
+
+      - name: Deploy
+        if: startsWith(github.ref, 'refs/tags/') && github.repository == 'cocoa-xu/qemu-build'
+        env:
+          DEPLOY_MACOS_HOOK_URL: ${{ secrets.DEPLOY_MACOS_HOOK_URL }}
+        run: |
+          curl -sS --max-time 1200 --no-progress-meter "${DEPLOY_MACOS_HOOK_URL}&version=${{ github.ref_name }}&platforms[]=${{ env.HOST_TRIPLET }}"
