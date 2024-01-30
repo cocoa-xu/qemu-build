@@ -31,4 +31,5 @@ make DESTDIR="${DESTDIR}" install
 
 cd "${DESTDIR}"
 tar -cJf "${ROOTDIR}/build/qemu-${HOST_TRIPLET}.tar.xz" .
+cd "${ROOTDIR}/build"
 sha256sum qemu-${HOST_TRIPLET}.tar.xz | tee qemu-${HOST_TRIPLET}.tar.xz.sha256
