@@ -102,6 +102,7 @@ jobs:
 
       - name: Compile QEMU
         run: |
+          export QEMU_VERSION=${GITHUB_REF##*/v}
           export ROOTDIR="$(pwd)"
           export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
           
@@ -160,6 +161,7 @@ jobs:
 
       - name: Compile QEMU
         run: |
+          export QEMU_VERSION=${GITHUB_REF##*/v}
           export PATH="/opt/homebrew/bin:$PATH"
           export ROOTDIR="$(pwd)"
           export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
