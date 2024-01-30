@@ -18,7 +18,7 @@ apt-get install -y curl gcc g++ git build-essential gettext \
 mkdir -p /work/build
 chmod a+rw /work/build
 
-export ROOTDIR="$(pwd)"
+export ROOTDIR="/work"
 export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
 export XZ_OPT="-e -T0 -9"
 
