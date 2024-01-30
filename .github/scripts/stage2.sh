@@ -30,5 +30,5 @@ make -j$(nproc)
 make DESTDIR="${DESTDIR}" install
 
 cd "${DESTDIR}"
-tar -cJf "${ROOTDIR}/build/qemu-${HOST_TRIPLET}.tar.gz" .
+tar -cJf "${ROOTDIR}/build/qemu-${HOST_TRIPLET}.tar.xz" .
 sha256sum qemu-${HOST_TRIPLET}.tar.xz | tee qemu-${HOST_TRIPLET}.tar.xz.sha256
