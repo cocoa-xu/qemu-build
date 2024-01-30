@@ -28,7 +28,14 @@ jobs:
             libnl-3-dev libudev-dev flex libnfs-dev libssh-dev libssh2-1-dev libpng-dev \
             bison libusb-dev libsnappy-dev libsdl2-dev libpam0g-dev libbz2-dev liblzma-dev \
             libzstd-dev libcap-ng-dev libjpeg-dev libvde-dev libvdeplug-dev liblzo2-dev \
-            libspice-server-dev libspice-protocol-dev
+            libspice-server-dev libspice-protocol-dev python3-full python3-setuptools
+          if [ -f "/usr/local/bin/python3" ]; then
+            /usr/local/bin/python3 -m ensurepip --default-pip
+            /usr/local/bin/python3 -m pip install -U setuptools
+          fi
+          FIRST_PYTHON3="$(which python3)"
+          ${FIRST_PYTHON3} -m ensurepip --default-pip
+          ${FIRST_PYTHON3} -m pip install -U setuptools
 
       - name: Compile QEMU
         run: |
