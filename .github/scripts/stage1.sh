@@ -9,3 +9,7 @@ DOCKER_IMAGE=$4
 
 sudo docker run --privileged --network=host --rm --platform="${DOCKER_PLATFORM}" -v $(pwd):/work "${DOCKER_IMAGE}" \
     sh -c "chmod a+x /work/stage2.sh && /work/stage2.sh ${QEMU_VERSION} ${HOST_TRIPLET}"
+
+if [ -d "$(pwd)/build" ]; then
+  sudo chmod -R a+wr "$(pwd)/build" ;
+fi
