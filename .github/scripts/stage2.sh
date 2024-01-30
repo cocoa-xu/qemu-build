@@ -7,7 +7,7 @@ HOST_TRIPLET=$2
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-pt-get install -y curl gcc g++ git build-essential gettext \
+apt-get install -y curl gcc g++ git build-essential gettext \
     libxml2-utils xsltproc libglib2.0-dev gnutls-dev python3-docutils libslirp-dev \
     libyajl-dev meson libosinfo-1.0-dev libcurl4-openssl-dev libreadline-dev \
     libnl-3-dev libudev-dev flex libnfs-dev libssh-dev libssh2-1-dev libpng-dev \
