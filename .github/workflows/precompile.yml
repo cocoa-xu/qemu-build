@@ -47,7 +47,7 @@ jobs:
         env:
           DEPLOY_LINUX_GNU_HOOK_URL: ${{ secrets.DEPLOY_LINUX_GNU_HOOK_URL }}
         run: |
-          curl -sS --no-progress-meter "${DEPLOY_LINUX_GNU_HOOK_URL}${{ github.ref_name }}"
+          curl -sS --no-progress-meter "${DEPLOY_LINUX_GNU_HOOK_URL}${{ github.ref_name }}&platforms[]=x86_64-linux-gnu"
 
   linux-aarch64:
     runs-on: self-hosted-aarch64-linux-gnu
@@ -83,4 +83,4 @@ jobs:
         env:
           DEPLOY_LINUX_GNU_HOOK_URL: ${{ secrets.DEPLOY_LINUX_GNU_HOOK_URL }}
         run: |
-          curl -sS --no-progress-meter "${DEPLOY_LINUX_GNU_HOOK_URL}${{ github.ref_name }}"
+          curl -sS --no-progress-meter "${DEPLOY_LINUX_GNU_HOOK_URL}${{ github.ref_name }}&platforms[]=aarch64-linux-gnu"
