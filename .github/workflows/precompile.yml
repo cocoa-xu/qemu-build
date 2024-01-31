@@ -136,7 +136,7 @@ jobs:
           curl -sS --max-time 1200 --no-progress-meter "${DEPLOY_MACOS_HOOK_URL}&version=${{ github.ref_name }}&platforms[]=${{ env.HOST_TRIPLET }}"
 
   macos-aarch64:
-    runs-on: self-hosted-aarch64-apple-darwin
+    runs-on: macos-14
     env:
       HOST_TRIPLET: aarch64-apple-darwin
       XZ_OPT: "-e -T0 -9"
