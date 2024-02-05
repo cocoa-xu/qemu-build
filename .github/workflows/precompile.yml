@@ -194,3 +194,53 @@ jobs:
           DEPLOY_MACOS_HOOK_URL: ${{ secrets.DEPLOY_MACOS_HOOK_URL }}
         run: |
           curl -sS --max-time 1200 --no-progress-meter "${DEPLOY_MACOS_HOOK_URL}&version=${{ github.ref_name }}&platforms[]=${{ env.HOST_TRIPLET }}"
+
+  macos-universal:
+    needs: [macos-x86_64, macos-aarch64]
+    runs-on: macos-12
+    env:
+      XZ_OPT: "-e -T0 -9"
+    name: macos-universal
+
+    steps:
+      - name: Create universal binaries
+        run: |
+          export ROOTDIR="$(pwd)"
+          export QEMU_VERSION=${GITHUB_REF##*/v}
+
+          mkdir -p universal
+          cd universal
+          
+          curl -fSL "https://github.com/cocoa-xu/qemu-build/releases/download/v${QEMU_VERSION}/qemu-aarch64-apple-darwin.tar.xz" -o "qemu-aarch64-apple-darwin.tar.xz"
+          mkdir -p qemu-aarch64-apple-darwin
+          tar -xf qemu-aarch64-apple-darwin.tar.xz -C qemu-aarch64-apple-darwin --strip-components=3
+
+          curl -fSL "https://github.com/cocoa-xu/qemu-build/releases/download/v${QEMU_VERSION}/qemu-x86_64-apple-darwin.tar.xz" -o "qemu-x86_64-apple-darwin.tar.xz"
+          mkdir -p qemu-x86_64-apple-darwin
+          tar -xf qemu-x86_64-apple-darwin.tar.xz -C qemu-x86_64-apple-darwin --strip-components=3
+
+          find ./qemu-aarch64-apple-darwin/bin -perm +0111 -type f -exec bash -c 'lipo -create {} $(echo {} | sed "s/qemu-aarch64-apple/qemu-x86_64-apple/") -output {}' \;
+          find ./qemu-aarch64-apple-darwin/lib -perm +0111 -type f -exec bash -c 'lipo -create {} $(echo {} | sed "s/qemu-aarch64-apple/qemu-x86_64-apple/") -output {}' \;
+
+          mkdir -p output/usr
+          mv ./qemu-aarch64-apple-darwin ./output/usr/local
+          
+          cd output
+          tar -cJf "${ROOTDIR}/qemu-macos-universal.tar.xz" .
+          cd ${ROOTDIR}
+          sha256sum qemu-macos-universal.tar.xz | tee qemu-macos-universal.tar.xz.sha256
+
+      - name: Upload QEMU artifacts
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ./qemu-macos-universal.tar.xz
+            ./qemu-macos-universal.tar.xz.sha256
+
+      - name: Deploy
+        if: startsWith(github.ref, 'refs/tags/') && github.repository == 'cocoa-xu/qemu-build'
+        env:
+          DEPLOY_MACOS_HOOK_URL: ${{ secrets.DEPLOY_MACOS_HOOK_URL }}
+        run: |
+          curl -sS --max-time 1200 --no-progress-meter "${DEPLOY_MACOS_HOOK_URL}&version=${{ github.ref_name }}&platforms[]=macos-universal"
