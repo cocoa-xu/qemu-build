@@ -15,12 +15,15 @@ apt-get install -y curl gcc g++ git build-essential gettext \
     libzstd-dev libcap-ng-dev libjpeg-dev libvde-dev libvdeplug-dev liblzo2-dev \
     libspice-server-dev libspice-protocol-dev python3 python3-pip python3-setuptools
 
+rm -rf /work/build
 mkdir -p /work/build
 chmod a+rw /work/build
 
 export ROOTDIR="/work"
 export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
 export XZ_OPT="-e -T0 -9"
+rm -rf "${DESTDIR}"
+mkdir -p "${DESTDIR}"
 
 curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
 tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
