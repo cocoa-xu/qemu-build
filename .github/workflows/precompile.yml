@@ -223,8 +223,8 @@ jobs:
           mkdir -p qemu-x86_64-apple-darwin
           tar -xf qemu-x86_64-apple-darwin.tar.xz -C qemu-x86_64-apple-darwin --strip-components=3
 
-          find ./qemu-aarch64-apple-darwin/bin -perm +0111 -type f -exec bash -c 'lipo -create {} $(echo {} | sed "s/qemu-aarch64-apple/qemu-x86_64-apple/") -output {}' \;
-          find ./qemu-aarch64-apple-darwin/lib -perm +0111 -type f -exec bash -c 'lipo -create {} $(echo {} | sed "s/qemu-aarch64-apple/qemu-x86_64-apple/") -output {}' \;
+          find ./qemu-aarch64-apple-darwin/bin -perm +0111 -type f -exec bash -c 'export X86_64_DYLIB="$(echo {} | sed "s/qemu-aarch64-apple/qemu-x86_64-apple/")" && [ -f "${X86_64_DYLIB}" ] && lipo -create {} ${X86_64_DYLIB} -output {} && echo {}' \;
+          find ./qemu-aarch64-apple-darwin/lib -perm +0111 -type f -exec bash -c 'export X86_64_DYLIB="$(echo {} | sed "s/qemu-aarch64-apple/qemu-x86_64-apple/")" && [ -f "${X86_64_DYLIB}" ] && lipo -create {} ${X86_64_DYLIB} -output {} && echo {}' \;
 
           mkdir -p output/usr
           mv ./qemu-aarch64-apple-darwin ./output/usr/local
