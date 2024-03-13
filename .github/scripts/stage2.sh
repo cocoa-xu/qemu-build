@@ -28,7 +28,7 @@ mkdir -p "${DESTDIR}"
 curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
 tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
 cd "qemu-${QEMU_VERSION}"
-./configure --enable-strip --enable-user --enable-modules --enable-vhost-user --prefix=/usr/local --disable-xen
+./configure --enable-strip --enable-slirp --enable-user --enable-modules --enable-vhost-user --prefix=/usr/local --disable-xen
 make -j$(nproc)
 make DESTDIR="${DESTDIR}" install
 
