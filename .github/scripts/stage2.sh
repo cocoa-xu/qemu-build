@@ -21,10 +21,6 @@ mkdir -p /work/build
 chmod a+rw /work/build
 
 export ROOTDIR="/work"
-export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
-export XZ_OPT="-e -T0 -9"
-rm -rf "${DESTDIR}"
-mkdir -p "${DESTDIR}"
 
 export CURRENT_DIR=$(pwd)
 curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
@@ -37,22 +33,12 @@ cd libslirp
 meson setup -Ddefault_library=static build
 ninja -C build install
 
-# static build
-cd "${CURRENT_DIR}"
-cd "qemu-${QEMU_VERSION}"
-./configure --enable-strip --enable-slirp --enable-user --static --enable-vhost-user --prefix=/usr/local --disable-xen
-make -j$(nproc)
-make DESTDIR="${DESTDIR}" install
+export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
+export XZ_OPT="-e -T0 -9"
+rm -rf "${DESTDIR}"
+mkdir -p "${DESTDIR}"
 
-cd "${DESTDIR}"
-tar -cJf "${ROOTDIR}/build/qemu-static-${HOST_TRIPLET}.tar.xz" .
-cd "${ROOTDIR}/build"
-sha256sum qemu-static-${HOST_TRIPLET}.tar.xz | tee qemu-static-${HOST_TRIPLET}.tar.xz.sha256
-
-# shared build
 cd "${CURRENT_DIR}"
-rm -rf "qemu-${QEMU_VERSION}"
-tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
 cd "qemu-${QEMU_VERSION}"
 ./configure --enable-strip --enable-slirp --enable-user --enable-modules --enable-vhost-user --prefix=/usr/local --disable-xen
 make -j$(nproc)
@@ -62,5 +48,6 @@ cd "${DESTDIR}"
 tar -cJf "${ROOTDIR}/build/qemu-${HOST_TRIPLET}.tar.xz" .
 cd "${ROOTDIR}/build"
 sha256sum qemu-${HOST_TRIPLET}.tar.xz | tee qemu-${HOST_TRIPLET}.tar.xz.sha256
+
 cd "${CURRENT_DIR}"
 rm -rf "qemu-${QEMU_VERSION}"
