@@ -14,7 +14,7 @@ apt-get install -y curl gcc g++ git build-essential gettext \
     bison libusb-dev libsnappy-dev libsdl2-dev libpam0g-dev libbz2-dev liblzma-dev \
     libzstd-dev libcap-ng-dev libjpeg-dev libvde-dev libvdeplug-dev liblzo2-dev \
     libspice-server-dev libspice-protocol-dev python3 python3-pip python3-setuptools \
-    libunistring-dev libp11-kit-dev
+    libunistring-dev libp11-kit-dev ninja-build
 
 rm -rf /work/build
 mkdir -p /work/build
@@ -30,7 +30,14 @@ curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEM
 XZ_OPT="-k"
 tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
 
+# static build slirp
+git clone https://gitlab.freedesktop.org/slirp/libslirp.git
+cd libslirp
+meson setup -Ddefault_library=static build
+ninja -C build install
+
 # static build
+cd "${ROOTDIR}"
 cd "qemu-${QEMU_VERSION}"
 ./configure --enable-strip --enable-slirp --enable-user --static --enable-vhost-user --prefix=/usr/local --disable-xen
 make -j$(nproc)

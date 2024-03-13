@@ -98,6 +98,13 @@ jobs:
           FIRST_PYTHON3="$(which python3)"
           ${FIRST_PYTHON3} -m pip install -U setuptools --break-system-packages
 
+      - name: Compile Slirp
+        run: |
+          git clone https://gitlab.freedesktop.org/slirp/libslirp.git
+          cd libslirp
+          meson setup -Ddefault_library=static build
+          ninja -C build install
+
       - name: Compile QEMU
         run: |
           export QEMU_VERSION=${GITHUB_REF##*/v}
@@ -173,6 +180,13 @@ jobs:
           FIRST_PYTHON3="$(which python3)"
           ${FIRST_PYTHON3} -m ensurepip --default-pip
           ${FIRST_PYTHON3} -m pip install -U setuptools
+
+      - name: Compile Slirp
+        run: |
+          git clone https://gitlab.freedesktop.org/slirp/libslirp.git
+          cd libslirp
+          meson setup -Ddefault_library=static build
+          ninja -C build install
 
       - name: Compile QEMU
         run: |
