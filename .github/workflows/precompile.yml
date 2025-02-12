@@ -18,7 +18,7 @@ jobs:
     env:
       HOST_TRIPLET: x86_64-linux-gnu
       DOCKER_PLATFORM: linux/amd64
-      DOCKER_IMAGE: ubuntu:20.04
+      DOCKER_IMAGE: ubuntu:22.04
     name: x86_64-linux-gnu
 
     steps:
