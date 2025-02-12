@@ -23,6 +23,7 @@ chmod a+rw /work/build
 export ROOTDIR="/work"
 
 pip3 install git+https://github.com/mesonbuild/meson.git
+pip3 install tomli
 
 export CURRENT_DIR=$(pwd)
 curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
