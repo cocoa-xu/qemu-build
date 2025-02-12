@@ -9,7 +9,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y curl gcc g++ git build-essential gettext \
     libxml2-utils xsltproc libglib2.0-dev gnutls-dev python3-docutils libslirp-dev \
-    libyajl-dev meson libosinfo-1.0-dev libcurl4-openssl-dev libreadline-dev \
+    libyajl-dev libosinfo-1.0-dev libcurl4-openssl-dev libreadline-dev \
     libnl-3-dev libudev-dev flex libnfs-dev libssh-dev libssh2-1-dev libpng-dev \
     bison libusb-dev libsnappy-dev libsdl2-dev libpam0g-dev libbz2-dev liblzma-dev \
     libzstd-dev libcap-ng-dev libjpeg-dev libvde-dev libvdeplug-dev liblzo2-dev \
@@ -21,6 +21,8 @@ mkdir -p /work/build
 chmod a+rw /work/build
 
 export ROOTDIR="/work"
+
+pip3 install git+https://github.com/mesonbuild/meson.git
 
 export CURRENT_DIR=$(pwd)
 curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
