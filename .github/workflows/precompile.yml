@@ -50,7 +50,7 @@ jobs:
     env:
       HOST_TRIPLET: aarch64-linux-gnu
       DOCKER_PLATFORM: linux/arm64
-      DOCKER_IMAGE: ubuntu:20.04
+      DOCKER_IMAGE: ubuntu:22.04
     name: aarch64-linux-gnu
 
     steps:
