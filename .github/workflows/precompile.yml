@@ -78,7 +78,7 @@ jobs:
           curl -sS --no-progress-meter "${DEPLOY_LINUX_GNU_HOOK_URL}&version=${{ github.ref_name }}&platforms[]=${{ env.HOST_TRIPLET }}"
 
   macos-x86_64:
-    runs-on: self-hosted-x86_64-apple-darwin
+    runs-on: macos-13
     env:
       HOST_TRIPLET: x86_64-apple-darwin
       XZ_OPT: "-e -T0 -9"
@@ -213,7 +213,7 @@ jobs:
 
   macos-universal:
     needs: [macos-x86_64, macos-aarch64]
-    runs-on: macos-12
+    runs-on: macos-13
     env:
       XZ_OPT: "-e -T0 -9"
     name: macos-universal
