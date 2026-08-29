@@ -143,7 +143,8 @@ jobs:
             gnutls curl libssh libnfs libiscsi \
             libusb usbredir vde \
             sdl2-compat sdl2_image libpng jpeg-turbo ncurses libxkbcommon \
-            lzo snappy zstd lzfse
+            lzo snappy zstd lzfse \
+            bison flex
           
           if [ -f "/usr/local/bin/python3" ]; then
             /usr/local/bin/python3 -m pip install -U --break-system-packages setuptools
@@ -170,12 +171,14 @@ jobs:
           tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
           cd "qemu-${QEMU_VERSION}"
           BREW_PREFIX="$(brew --prefix)"
+          export PATH="${BREW_PREFIX}/opt/bison/bin:${BREW_PREFIX}/opt/flex/bin:${PATH}"
           export PKG_CONFIG_PATH="${BREW_PREFIX}/opt/curl/lib/pkgconfig:${BREW_PREFIX}/opt/ncurses/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
-          export CPPFLAGS="-I${BREW_PREFIX}/include ${CPPFLAGS:-}"
-          export LDFLAGS="-L${BREW_PREFIX}/lib ${LDFLAGS:-}"
+          bison --version | head -1
 
           ./configure \
             --prefix=/usr/local \
+            --extra-cflags="-I${BREW_PREFIX}/include" \
+            --extra-ldflags="-L${BREW_PREFIX}/lib" \
             --disable-xen \
             --enable-strip \
             --enable-modules \
@@ -262,7 +265,8 @@ jobs:
             gnutls curl libssh libnfs libiscsi \
             libusb usbredir vde \
             sdl2-compat sdl2_image libpng jpeg-turbo ncurses libxkbcommon \
-            lzo snappy zstd lzfse
+            lzo snappy zstd lzfse \
+            bison flex
 
           if [ -f "/usr/local/bin/python3" ]; then
             /usr/local/bin/python3 -m pip install -U --break-system-packages setuptools
@@ -290,12 +294,14 @@ jobs:
           tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
           cd "qemu-${QEMU_VERSION}"
           BREW_PREFIX="$(brew --prefix)"
+          export PATH="${BREW_PREFIX}/opt/bison/bin:${BREW_PREFIX}/opt/flex/bin:${PATH}"
           export PKG_CONFIG_PATH="${BREW_PREFIX}/opt/curl/lib/pkgconfig:${BREW_PREFIX}/opt/ncurses/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
-          export CPPFLAGS="-I${BREW_PREFIX}/include ${CPPFLAGS:-}"
-          export LDFLAGS="-L${BREW_PREFIX}/lib ${LDFLAGS:-}"
+          bison --version | head -1
 
           ./configure \
             --prefix=/usr/local \
+            --extra-cflags="-I${BREW_PREFIX}/include" \
+            --extra-ldflags="-L${BREW_PREFIX}/lib" \
             --disable-xen \
             --enable-strip \
             --enable-modules \
