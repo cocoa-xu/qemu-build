@@ -23,10 +23,6 @@ on:
           - macos-aarch64
           - macos-universal
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref }}
-  cancel-in-progress: true
-
 permissions:
   contents: write
 
@@ -35,6 +31,9 @@ env:
 
 jobs:
   linux-x86_64:
+    concurrency:
+      group: ${{ github.workflow }}-x86_64-linux-gnu-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+      cancel-in-progress: true
     if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'linux-x86_64'
     runs-on: ubuntu-latest
     env:
@@ -63,6 +62,9 @@ jobs:
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
 
   linux-aarch64:
+    concurrency:
+      group: ${{ github.workflow }}-aarch64-linux-gnu-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+      cancel-in-progress: true
     if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'linux-aarch64'
     runs-on: ubuntu-24.04-arm
     env:
@@ -91,6 +93,9 @@ jobs:
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
 
   macos-x86_64:
+    concurrency:
+      group: ${{ github.workflow }}-x86_64-apple-darwin-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+      cancel-in-progress: true
     if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'macos-x86_64'
     runs-on: macos-15-intel
     env:
@@ -154,6 +159,9 @@ jobs:
             build/qemu-static-${{ env.HOST_TRIPLET }}.tar.xz.sha256
 
   macos-aarch64:
+    concurrency:
+      group: ${{ github.workflow }}-aarch64-apple-darwin-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+      cancel-in-progress: true
     if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'macos-aarch64'
     runs-on: macos-14
     env:
@@ -217,6 +225,9 @@ jobs:
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
 
   macos-universal:
+    concurrency:
+      group: ${{ github.workflow }}-macos-universal-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+      cancel-in-progress: true
     needs: [macos-x86_64, macos-aarch64]
     if: >-
       always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
