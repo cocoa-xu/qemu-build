@@ -154,7 +154,6 @@ jobs:
             --enable-modules \
             --enable-user \
             --enable-tools \
-            --enable-guest-agent \
             --enable-plugins \
             --enable-tpm \
             --enable-replication \
@@ -274,7 +273,6 @@ jobs:
             --enable-modules \
             --enable-user \
             --enable-tools \
-            --enable-guest-agent \
             --enable-plugins \
             --enable-tpm \
             --enable-replication \
