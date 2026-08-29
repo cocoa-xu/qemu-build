@@ -4,16 +4,38 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag to build, e.g. v11.0.0'
+        required: true
+        type: string
+      target:
+        description: 'Which build to run'
+        required: true
+        default: macos-x86_64
+        type: choice
+        options:
+          - all
+          - linux-x86_64
+          - linux-aarch64
+          - macos-x86_64
+          - macos-aarch64
+          - macos-universal
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: write
 
+env:
+  QEMU_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+
 jobs:
   linux-x86_64:
+    if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'linux-x86_64'
     runs-on: ubuntu-latest
     env:
       HOST_TRIPLET: x86_64-linux-gnu
@@ -27,18 +49,21 @@ jobs:
 
       - name: Compile in Docker
         run: |
-          export QEMU_VERSION=${GITHUB_REF##*/v}
+          export QEMU_VERSION="${QEMU_TAG#v}"
           cp .github/scripts/*.sh ./
           bash ./stage1.sh "${QEMU_VERSION}" "${{ env.HOST_TRIPLET }}" "${{ env.DOCKER_PLATFORM }}" "${{ env.DOCKER_IMAGE }}"
 
       - uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
+          tag_name: ${{ env.QEMU_TAG }}
+          make_latest: ${{ github.event_name == 'workflow_dispatch' && 'false' || 'true' }}
           files: |
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
 
   linux-aarch64:
+    if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'linux-aarch64'
     runs-on: ubuntu-24.04-arm
     env:
       HOST_TRIPLET: aarch64-linux-gnu
@@ -52,18 +77,21 @@ jobs:
 
       - name: Compile in Docker
         run: |
-          export QEMU_VERSION=${GITHUB_REF##*/v}
+          export QEMU_VERSION="${QEMU_TAG#v}"
           cp .github/scripts/*.sh ./
           bash ./stage1.sh "${QEMU_VERSION}" "${{ env.HOST_TRIPLET }}" "${{ env.DOCKER_PLATFORM }}" "${{ env.DOCKER_IMAGE }}"
 
       - uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
+          tag_name: ${{ env.QEMU_TAG }}
+          make_latest: ${{ github.event_name == 'workflow_dispatch' && 'false' || 'true' }}
           files: |
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
 
   macos-x86_64:
+    if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'macos-x86_64'
     runs-on: macos-15-intel
     env:
       HOST_TRIPLET: x86_64-apple-darwin
@@ -93,7 +121,7 @@ jobs:
 
       - name: Compile QEMU
         run: |
-          export QEMU_VERSION=${GITHUB_REF##*/v}
+          export QEMU_VERSION="${QEMU_TAG#v}"
           export ROOTDIR="$(pwd)"
           export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
           rm -rf "${DESTDIR}"
@@ -115,8 +143,10 @@ jobs:
 
       - name: Upload QEMU artifacts
         uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
+          tag_name: ${{ env.QEMU_TAG }}
+          make_latest: ${{ github.event_name == 'workflow_dispatch' && 'false' || 'true' }}
           files: |
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
@@ -124,6 +154,7 @@ jobs:
             build/qemu-static-${{ env.HOST_TRIPLET }}.tar.xz.sha256
 
   macos-aarch64:
+    if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'macos-aarch64'
     runs-on: macos-14
     env:
       HOST_TRIPLET: aarch64-apple-darwin
@@ -154,7 +185,7 @@ jobs:
 
       - name: Compile QEMU
         run: |
-          export QEMU_VERSION=${GITHUB_REF##*/v}
+          export QEMU_VERSION="${QEMU_TAG#v}"
           export PATH="/opt/homebrew/bin:$PATH"
           export ROOTDIR="$(pwd)"
           export DESTDIR="${ROOTDIR}/build/qemu-${QEMU_VERSION}"
@@ -177,14 +208,19 @@ jobs:
 
       - name: Upload QEMU artifacts
         uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
+          tag_name: ${{ env.QEMU_TAG }}
+          make_latest: ${{ github.event_name == 'workflow_dispatch' && 'false' || 'true' }}
           files: |
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz
             build/qemu-${{ env.HOST_TRIPLET }}.tar.xz.sha256
 
   macos-universal:
     needs: [macos-x86_64, macos-aarch64]
+    if: >-
+      always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'macos-universal')
     runs-on: macos-15-intel
     env:
       XZ_OPT: "-e -T0 -9"
@@ -194,7 +230,7 @@ jobs:
       - name: Create universal binaries for shared linked builds
         run: |
           export ROOTDIR="$(pwd)"
-          export QEMU_VERSION=${GITHUB_REF##*/v}
+          export QEMU_VERSION="${QEMU_TAG#v}"
 
           mkdir -p universal
           cd universal
@@ -221,8 +257,10 @@ jobs:
 
       - name: Upload QEMU artifacts
         uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
+          tag_name: ${{ env.QEMU_TAG }}
+          make_latest: ${{ github.event_name == 'workflow_dispatch' && 'false' || 'true' }}
           files: |
             ./qemu-macos-universal.tar.xz
             ./qemu-macos-universal.tar.xz.sha256
