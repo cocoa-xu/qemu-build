@@ -109,7 +109,14 @@ jobs:
     
       - name: Install dependencies
         run: |
-          brew install cmake ninja meson libarchive git glib gnu-sed automake autoconf coreutils llvm make wget pixman pkg-config xz texinfo mercurial libtool samba socat dtc libsolv
+          brew install \
+            cmake ninja meson pkg-config \
+            libarchive git gnu-sed automake autoconf coreutils llvm make wget texinfo mercurial libtool \
+            glib pixman dtc capstone libsolv samba socat xz \
+            gnutls curl libssh libnfs libiscsi \
+            libusb usbredir vde \
+            sdl2-compat sdl2_image libpng jpeg-turbo ncurses libxkbcommon \
+            lzo snappy zstd lzfse
           
           if [ -f "/usr/local/bin/python3" ]; then
             /usr/local/bin/python3 -m pip install -U --break-system-packages setuptools
@@ -135,7 +142,52 @@ jobs:
           curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
           tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
           cd "qemu-${QEMU_VERSION}"
-          ./configure --enable-strip --enable-slirp --enable-user --enable-modules --prefix=/usr/local --disable-xen
+          BREW_PREFIX="$(brew --prefix)"
+          export PKG_CONFIG_PATH="${BREW_PREFIX}/opt/curl/lib/pkgconfig:${BREW_PREFIX}/opt/ncurses/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+          export CPPFLAGS="-I${BREW_PREFIX}/include ${CPPFLAGS:-}"
+          export LDFLAGS="-L${BREW_PREFIX}/lib ${LDFLAGS:-}"
+
+          ./configure \
+            --prefix=/usr/local \
+            --disable-xen \
+            --enable-strip \
+            --enable-modules \
+            --enable-user \
+            --enable-tools \
+            --enable-guest-agent \
+            --enable-plugins \
+            --enable-tpm \
+            --enable-replication \
+            --enable-capstone \
+            --enable-cocoa \
+            --enable-hvf \
+            --enable-vmnet \
+            --enable-pvg \
+            --enable-coreaudio \
+            --enable-curses \
+            --enable-iconv \
+            --enable-sdl \
+            --enable-sdl-image \
+            --enable-vnc \
+            --enable-vnc-jpeg \
+            --enable-vnc-sasl \
+            --enable-png \
+            --enable-xkbcommon \
+            --enable-gnutls \
+            --enable-curl \
+            --enable-libssh \
+            --enable-libnfs \
+            --enable-libiscsi \
+            --enable-slirp \
+            --enable-vde \
+            --enable-virtfs \
+            --enable-libusb \
+            --enable-usb-redir \
+            --enable-lzo \
+            --enable-snappy \
+            --enable-zstd \
+            --enable-bzip2 \
+            --enable-lzfse
           make -j$(nproc)
           make DESTDIR="${DESTDIR}" install
 
@@ -176,7 +228,14 @@ jobs:
       - name: Install dependencies
         run: |
           export PATH="/opt/homebrew/bin:$PATH"
-          brew install cmake ninja meson libarchive git glib gnu-sed automake autoconf coreutils llvm make wget pixman pkg-config xz texinfo mercurial libtool samba socat dtc libsolv
+          brew install \
+            cmake ninja meson pkg-config \
+            libarchive git gnu-sed automake autoconf coreutils llvm make wget texinfo mercurial libtool \
+            glib pixman dtc capstone libsolv samba socat xz \
+            gnutls curl libssh libnfs libiscsi \
+            libusb usbredir vde \
+            sdl2-compat sdl2_image libpng jpeg-turbo ncurses libxkbcommon \
+            lzo snappy zstd lzfse
 
           if [ -f "/usr/local/bin/python3" ]; then
             /usr/local/bin/python3 -m pip install -U --break-system-packages setuptools
@@ -203,7 +262,52 @@ jobs:
           curl -fSL "https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz" -o "qemu-${QEMU_VERSION}.tar.xz"
           tar -xJf "qemu-${QEMU_VERSION}.tar.xz"
           cd "qemu-${QEMU_VERSION}"
-          ./configure --enable-strip --enable-slirp --enable-user --enable-modules --prefix=/usr/local --disable-xen
+          BREW_PREFIX="$(brew --prefix)"
+          export PKG_CONFIG_PATH="${BREW_PREFIX}/opt/curl/lib/pkgconfig:${BREW_PREFIX}/opt/ncurses/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+          export CPPFLAGS="-I${BREW_PREFIX}/include ${CPPFLAGS:-}"
+          export LDFLAGS="-L${BREW_PREFIX}/lib ${LDFLAGS:-}"
+
+          ./configure \
+            --prefix=/usr/local \
+            --disable-xen \
+            --enable-strip \
+            --enable-modules \
+            --enable-user \
+            --enable-tools \
+            --enable-guest-agent \
+            --enable-plugins \
+            --enable-tpm \
+            --enable-replication \
+            --enable-capstone \
+            --enable-cocoa \
+            --enable-hvf \
+            --enable-vmnet \
+            --enable-pvg \
+            --enable-coreaudio \
+            --enable-curses \
+            --enable-iconv \
+            --enable-sdl \
+            --enable-sdl-image \
+            --enable-vnc \
+            --enable-vnc-jpeg \
+            --enable-vnc-sasl \
+            --enable-png \
+            --enable-xkbcommon \
+            --enable-gnutls \
+            --enable-curl \
+            --enable-libssh \
+            --enable-libnfs \
+            --enable-libiscsi \
+            --enable-slirp \
+            --enable-vde \
+            --enable-virtfs \
+            --enable-libusb \
+            --enable-usb-redir \
+            --enable-lzo \
+            --enable-snappy \
+            --enable-zstd \
+            --enable-bzip2 \
+            --enable-lzfse
           make -j$(nproc)
           make DESTDIR="${DESTDIR}" install
           
