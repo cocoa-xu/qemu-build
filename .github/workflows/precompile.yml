@@ -245,7 +245,7 @@ jobs:
       group: ${{ github.workflow }}-aarch64-apple-darwin-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
       cancel-in-progress: true
     if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'macos-aarch64'
-    runs-on: macos-14
+    runs-on: macos-15
     env:
       HOST_TRIPLET: aarch64-apple-darwin
       XZ_OPT: "-e -T0 -9"
